@@ -1,9 +1,4 @@
-import {
-  PROCESSING_STEPS,
-  type JobStatus,
-  type ProcessingStep,
-  type ProjectStatus,
-} from "@/types/domain";
+import type { JobStatus, ProcessingStep, ProjectStatus } from "@/types/domain";
 
 /**
  * Pure job/project state-machine rules. No I/O — safe to unit test and to reuse
@@ -38,19 +33,6 @@ const STEP_START_PROGRESS: Record<ProcessingStep, number> = {
 
 export function progressForStep(step: ProcessingStep): number {
   return STEP_START_PROGRESS[step];
-}
-
-export function nextStep(step: ProcessingStep): ProcessingStep | null {
-  const index = PROCESSING_STEPS.indexOf(step);
-  if (index < 0 || index >= PROCESSING_STEPS.length - 1) return null;
-  return PROCESSING_STEPS[index + 1];
-}
-
-/** Whether a step has been completed given the current in-flight step. */
-export function isStepComplete(step: ProcessingStep, currentStep: ProcessingStep | null, jobStatus: JobStatus): boolean {
-  if (jobStatus === "succeeded") return true;
-  if (!currentStep) return false;
-  return PROCESSING_STEPS.indexOf(step) < PROCESSING_STEPS.indexOf(currentStep);
 }
 
 /** Derive the project's status from its latest job. */

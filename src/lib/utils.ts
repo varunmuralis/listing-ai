@@ -16,17 +16,6 @@ export function formatCurrency(value: number | null | undefined): string {
   }).format(value);
 }
 
-/** Format a number as USD including cents. */
-export function formatCurrencyPrecise(value: number | null | undefined): string {
-  if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
 /** Format a compact number (e.g. square feet). */
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";

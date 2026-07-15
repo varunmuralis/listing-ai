@@ -43,6 +43,8 @@ export const ROOM_VISUALS: Record<RoomType, RoomVisual> = {
   other: { label: ROOM_TYPE_LABELS.other, color: "#8B929E", Icon: ImageIcon },
 };
 
+// TODO(rooms-milestone): consumed by the pending Rooms section UI (confidence
+// indicators + correction control). See HANDOFF.md priority #3.
 export function confidenceLabel(confidence: number): { label: string; tone: "success" | "warning" | "outline" } {
   if (confidence >= 0.85) return { label: "High confidence", tone: "success" };
   if (confidence >= 0.6) return { label: "Medium confidence", tone: "warning" };

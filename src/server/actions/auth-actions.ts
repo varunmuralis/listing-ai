@@ -27,7 +27,12 @@ export async function signInAction(_prev: ActionState, formData: FormData): Prom
     if (!parsed.success) {
       return errorState("Please fix the errors below.", z.flattenError(parsed.error).fieldErrors);
     }
-    await devSignIn(parsed.data.email, parsed.data.fullName ?? null);
+    try {
+      await devSignIn(parsed.data.email, parsed.data.fullName ?? null);
+    } catch (error) {
+      console.error("devSignIn failed:", error);
+      return errorState("We couldn't sign you in. Please try again.");
+    }
     redirect("/dashboard");
   }
 
@@ -60,6 +65,11 @@ export async function signInAction(_prev: ActionState, formData: FormData): Prom
 }
 
 export async function signOutAction(): Promise<void> {
-  await signOut();
+  try {
+    await signOut();
+  } catch (error) {
+    // Sign-out should always land the user on the sign-in page.
+    console.error("signOut failed:", error);
+  }
   redirect("/sign-in");
 }

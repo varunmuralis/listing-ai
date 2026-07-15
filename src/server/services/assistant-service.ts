@@ -1,6 +1,10 @@
 import "server-only";
+// TODO(assistant-milestone): this streaming service layer is complete but not yet
+// consumed — the AI chat Route Handler (app/api/projects/[id]/assistant/route.ts)
+// and the client chat panel still need to be built to pipe `sendUserMessage`'s
+// async iterator to a ReadableStream. See HANDOFF.md priority #6.
 import type { Conversation, Message } from "@/types/domain";
-import { err, ok, type Result } from "@/types/result";
+import { ok, type Result } from "@/types/result";
 import { getAIProvider } from "@/lib/ai";
 import { citationsFromFacts, type AIMessage, type GroundedContext } from "@/lib/ai/types";
 import type { Repositories } from "@/server/repositories/types";
@@ -84,24 +88,3 @@ export const STARTER_QUESTIONS = [
   "What should I verify during inspection?",
   "Could a king bed fit based on available information?",
 ] as const;
-
-/** Non-streaming path (kept for tests / no-JS fallbacks). */
-export async function generateReply(
-  repos: Repositories,
-  userId: string,
-  projectId: string,
-  content: string,
-): Promise<Result<Message>> {
-  const handle = await sendUserMessage(repos, userId, projectId, content);
-  if (!handle.ok) return handle;
-  let full = "";
-  for await (const delta of handle.data.stream) full += delta;
-  const conversation = await repos.conversations.getOrCreateForProject(projectId, userId);
-  const messages = await repos.messages.listByConversation(conversation.id);
-  const last = messages[messages.length - 1];
-  if (!last || last.role !== "assistant") {
-    return err("internal_error", "Assistant reply was not persisted.");
-  }
-  void full;
-  return ok(last);
-}

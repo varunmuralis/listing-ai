@@ -18,23 +18,35 @@ export async function createProjectAction(_prev: ActionState, formData: FormData
     return errorState("Please fix the errors below.", z.flattenError(parsed.error).fieldErrors);
   }
 
-  const result = await createProject(repos, user.id, parsed.data.sourceUrl);
-  if (!result.ok) {
-    return errorState(result.error.message, result.error.fields);
+  let projectId: string;
+  try {
+    const result = await createProject(repos, user.id, parsed.data.sourceUrl);
+    if (!result.ok) {
+      return errorState(result.error.message, result.error.fields);
+    }
+    // Begin processing immediately; the processing page also starts it idempotently.
+    await ensureProcessing(repos, result.data.job.id);
+    projectId = result.data.project.id;
+  } catch (error) {
+    console.error("createProjectAction failed:", error);
+    return errorState("We couldn't start the import. Please try again.");
   }
 
-  // Begin processing immediately; the processing page also starts it idempotently.
-  await ensureProcessing(repos, result.data.job.id);
-
   revalidatePath("/dashboard");
-  redirect(`/projects/${result.data.project.id}/processing`);
+  // `redirect` throws a control-flow signal — must stay outside the try/catch.
+  redirect(`/projects/${projectId}/processing`);
 }
 
 export async function deleteProjectAction(formData: FormData): Promise<void> {
   const { user, repos } = await requireUser();
   const projectId = String(formData.get("projectId") ?? "");
-  const auth = await authorizeProject(repos, user.id, projectId);
-  if (!auth.ok) return;
-  await repos.projects.delete(projectId);
-  revalidatePath("/dashboard");
+  if (!projectId) return;
+  try {
+    const auth = await authorizeProject(repos, user.id, projectId);
+    if (!auth.ok) return;
+    await repos.projects.delete(projectId);
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("deleteProjectAction failed:", error);
+  }
 }
