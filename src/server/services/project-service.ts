@@ -1,8 +1,8 @@
 import "server-only";
-import type { ProcessingJob, Project, ProjectWorkspace } from "@/types/domain";
+import type { ProcessingJob, Project, Property, ProjectWorkspace } from "@/types/domain";
 import { err, ok, type Result } from "@/types/result";
 import { validateListingUrl } from "@/lib/validation/listing-url";
-import type { Repositories } from "@/server/repositories/types";
+import type { PropertyData, Repositories } from "@/server/repositories/types";
 import { authorizeProject } from "@/server/services/authorization";
 
 export async function listProjects(repos: Repositories, userId: string): Promise<Project[]> {
@@ -39,6 +39,29 @@ export async function createProject(
   });
 
   return ok({ project, job });
+}
+
+export interface SavedListing {
+  project: Project;
+  property: Property;
+}
+
+/**
+ * Persist listing-editor changes: the project title plus all property fields.
+ * Authorizes once, then updates both records. Owner comes from the session.
+ */
+export async function saveListingDetails(
+  repos: Repositories,
+  userId: string,
+  projectId: string,
+  input: { title: string; property: PropertyData },
+): Promise<Result<SavedListing>> {
+  const auth = await authorizeProject(repos, userId, projectId);
+  if (!auth.ok) return auth;
+
+  const project = await repos.projects.update(projectId, { title: input.title });
+  const property = await repos.properties.upsert(projectId, input.property);
+  return ok({ project, property });
 }
 
 /** Load the authorized workspace aggregate (project + property + images). */

@@ -104,6 +104,19 @@ corresponding primitive and aren't needed by the current plan.
 - **Fixture images** depend on `picsum.photos` at render time (allowlisted in
   `next.config.ts`).
 
+## New technical debt (workspace milestone)
+
+- **Build gap: `"use server"` export validation.** The Turbopack production build
+  did **not** flag a non-async export from a `"use server"` file (`idleSaveState`,
+  since removed). It only surfaced at webpack-dev runtime and via the Playwright
+  e2e. Keep the e2e smoke as a CI backstop; don't rely on `next build` alone to
+  catch server-action module violations.
+- **Per-navigation workspace reload.** The `(workspace)` layout authorizes and
+  each section page re-loads the workspace aggregate via `getWorkspace`. Correct
+  and cheap now; a shared request-scoped loader/cache would dedupe later.
+- **Image display URL.** `image-url.ts` renders `sourceUrl`; resolving Supabase
+  `storagePath` to a public URL is still a TODO for the Supabase path.
+
 ## Architectural concerns
 
 - **Adapter parity risk.** Two persistence backends (memory + Supabase) implement

@@ -50,6 +50,12 @@ export const propertyEditSchema = z.object({
 });
 export type PropertyEditInput = z.infer<typeof propertyEditSchema>;
 
+/** Full listing-editor payload: the project title plus all property fields. */
+export const listingEditSchema = propertyEditSchema.extend({
+  title: z.string().trim().min(1, "A listing title is required.").max(200),
+});
+export type ListingEditInput = z.infer<typeof listingEditSchema>;
+
 export const roomCorrectionSchema = z.object({
   imageId: z.string().min(1),
   roomType: z.enum(ROOM_TYPES),

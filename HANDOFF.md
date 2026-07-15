@@ -133,32 +133,30 @@ tests/integration/processing-pipeline.test.ts
 - The **3D viewer** may be present from the background subagent but is not wired
   into a route yet — typecheck it before importing.
 
+## Completed since original handoff
+
+- ✅ **Workspace shell** — `(workspace)` route group with left nav / mobile sheet,
+  section sub-routes, sticky top bar, save-state indicator, unsaved guard.
+- ✅ **Listing editor** — RHF + `listingEditSchema`, `updatePropertyAction` →
+  `saveListingDetails`, dirty-state / save states / validation / unsaved guard.
+- ✅ **Photos + Rooms** — gallery with filters + detail dialog + optimistic
+  `correctRoomAction`; grouped room summary.
+- ✅ **Settings** — title edit, provider mode, delete with confirmation + redirect.
+- ✅ **Tests** — 30 Vitest + 2 Playwright specs (happy path + sections/mobile).
+
+See `WORKSPACE_MILESTONE.md` for the full write-up.
+
 ## Next implementation priorities (in order)
 
-1. **Workspace shell**: `src/app/projects/[projectId]/layout.tsx` with the left
-   nav (desktop) / sheet nav (mobile) and section sub-routes: Overview, Photos,
-   Rooms, 3D, Map, Mortgage, AI Agent, Settings. Load the workspace via
-   `getWorkspace(repos, user.id, projectId)`.
-2. **Listing editor** (Overview): React Hook Form + `propertyEditSchema` +
-   `zodResolver`, a server action calling `updateProperty()`, dirty-state / save
-   status / unsaved-change guard / validation errors.
-3. **Photos + Rooms**: gallery grouped by `room_type` using `ROOM_VISUALS`,
-   confidence indicators, and a correction control that calls
-   `correctRoomType()` (a `<Select>` of `ROOM_TYPES`). Add a
-   `correctRoom` server action + route.
-4. **Mortgage UI**: mount `calculateMortgage()` (already written & should be
-   unit-tested) with sliders/inputs, breakdown, amortization, chart.
-5. **Map**: `PropertyMap` client component (mapbox-gl + `clientEnv.mapboxToken`)
+1. **Mortgage UI**: mount `calculateMortgage()` (already written; add unit tests)
+   with sliders/inputs, breakdown, amortization, chart, as a Mortgage section.
+2. **Map**: re-add `mapbox-gl`; `PropertyMap` client component (`clientEnv.mapboxToken`)
    with missing-token / no-coordinate / loading / marker states; typed layer
    system stub for future datasets.
-6. **AI assistant**: streaming Route Handler (`app/api/projects/[id]/assistant/
+3. **AI assistant**: streaming Route Handler (`app/api/projects/[id]/assistant/
    route.ts`) piping `sendUserMessage()`'s async iterator to a `ReadableStream`;
    client chat panel with starter questions and streamed rendering.
-7. **3D**: wire `property-three-viewer.tsx` into the 3D section via
+4. **3D**: wire `property-three-viewer.tsx` into a 3D section via
    `next/dynamic(..., { ssr: false })`, feeding room-group counts.
-8. **Settings**: source URL, provider info, delete project (action exists).
-9. **Tests**: add unit tests for mortgage, URL validation, job transitions,
-   provider normalization, authz, room correction, editor save; add the
-   Playwright happy-path (`e2e/`) — `npx playwright install chromium` first.
-10. **Deploy checklist** (README): create Supabase project, run migrations, set
-    env, verify RLS, swap the listing provider for a licensed source.
+5. **Deploy checklist** (README): create Supabase project, run migrations, set
+   env, verify RLS, swap the listing provider for a licensed source.
